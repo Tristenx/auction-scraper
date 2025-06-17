@@ -10,12 +10,11 @@ def read_page():
     WebDriverWait(driver, 5).until(EC.presence_of_element_located(
         (By.CLASS_NAME, "row")))
 
-    items = driver.find_elements(
-        By.CLASS_NAME, "row")
+    item = driver.find_element(
+        By.XPATH, "/html/body/main/div/div[2]/div[2]/div[3]/div")
 
     with open(file="search_results.txt", mode="a") as file:
-        for i in range(round(len(items)/2)):
-            file.write(f"{items[i].text}\n")
+        file.write(item.text)
 
 
 def multiple_pages():
