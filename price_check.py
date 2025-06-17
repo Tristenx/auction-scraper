@@ -11,6 +11,8 @@ class PriceCheck:
     def __init__(self, content: AuctionContent):
         self.items = content.item_descriptions
         self.bids = content.current_bids
+        self.price_after_tax = [
+            (float(bid[1:len(bid)])+2)*1.25*1.2 for bid in self.bids]
         self.prices = []
         self.calculate_prices(self.read_price_data())
 
@@ -103,8 +105,11 @@ class PriceCheck:
             for price in item:
                 price = price[1:len(price)]
                 price = price.replace(",", "")
-                price = float(price)
-                sort_price.append(price)
+                try:
+                    price = float(price)
+                    sort_price.append(price)
+                except ValueError:
+                    pass
             sort_price.sort()
 
             q1 = sort_price[int(len(sort_price) * 0.25)]
