@@ -14,7 +14,6 @@ class PriceCheck:
         self.price_after_tax = [
             (float(bid[1:len(bid)])+2)*1.25*1.2 for bid in self.bids]
         self.prices = []
-        self.calculate_prices(self.read_price_data())
 
     def get_price_data(self):
         with open(file="price_data.txt", mode="w") as file:
@@ -81,7 +80,7 @@ class PriceCheck:
 
         driver.quit()
 
-    def read_price_data(self):
+    def calculate_prices(self):
         with open(file="price_data.txt", mode="r") as file:
             content = file.read()
 
@@ -97,9 +96,6 @@ class PriceCheck:
                 if len(entry) != 1:
                     new_item.append(entry[1])
 
-        return item_prices
-
-    def calculate_prices(self, item_prices):
         for item in item_prices:
             sort_price = []
             for price in item:
