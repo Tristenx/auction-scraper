@@ -90,7 +90,9 @@ class PriceCheck:
                 item_prices.append(new_item)
                 new_item = []
             else:
-                new_item.append(entry)
+                entry = entry.split("\n")
+                if len(entry) != 1:
+                    new_item.append(entry[1])
 
         return item_prices
 
