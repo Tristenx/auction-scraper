@@ -3,6 +3,7 @@ from price_check import PriceCheck
 
 auction_content = AuctionContent()
 price_check = PriceCheck(auction_content)
+price_check.get_price_data()
 print(price_check.bids)
 print(price_check.price_after_tax)
 price_check.calculate_prices()

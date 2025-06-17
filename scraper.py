@@ -14,8 +14,8 @@ def read_page():
         By.CLASS_NAME, "row")
 
     with open(file="search_results.txt", mode="a") as file:
-        for item in items:
-            file.write(f"{item.text}\n")
+        for i in range(round(len(items)/2)):
+            file.write(f"{items[i].text}\n")
 
 
 def multiple_pages():
