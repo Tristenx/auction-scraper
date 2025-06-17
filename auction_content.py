@@ -1,18 +1,16 @@
 class AuctionContent:
     def __init__(self):
-        self.text = self.get_search_results()
+        self.text = []
         self.lot_numbers = []
         self.item_descriptions = []
         self.current_bids = []
         self.time_remaining = []
         self.read_content()
 
-    def get_search_results(self):
-        with open(file="search_results.txt", mode="r") as file:
-            content = file.read()
-        return content
-
     def read_content(self):
+        with open(file="search_results.txt", mode="r") as file:
+            self.text = file.read()
+
         lines = self.text.split("\n")
         for i in range(len(lines)):
             words = lines[i].split(" ")
