@@ -12,6 +12,7 @@ class PriceCheck:
         self.items = content.item_descriptions
         self.bids = content.current_bids
         self.prices = []
+        self.calculate_prices(self.read_price_data())
 
     def get_price_data(self):
         with open(file="price_data.txt", mode="w") as file:
@@ -122,5 +123,6 @@ class PriceCheck:
                 total += price
 
             mean_price = total / len(valid_prices)
+            mean_price = round(mean_price, 2)
 
-            return mean_price
+            self.prices.append(mean_price)
