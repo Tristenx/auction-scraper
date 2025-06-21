@@ -43,34 +43,40 @@ class PriceCheck:
                 EC.element_to_be_clickable((By.ID, "search_icon"))
             ).click()
 
-            original_window = driver.current_window_handle
+            try:
+                original_window = driver.current_window_handle
 
-            WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, "b-scopeListItem-shop"))
-            ).click()
+                WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "b-scopeListItem-shop"))
+                ).click()
 
-            WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
+                WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
 
-            for window_handle in driver.window_handles:
-                if window_handle != original_window:
-                    driver.switch_to.window(window_handle)
-                    break
+                for window_handle in driver.window_handles:
+                    if window_handle != original_window:
+                        driver.switch_to.window(window_handle)
+                        break
 
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "slide")))
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "slide")))
 
-            items = driver.find_elements(By.CLASS_NAME, "slide")
-            for i in range(len(items)):
+                items = driver.find_elements(By.CLASS_NAME, "slide")
+                for i in range(len(items)):
+                    with open(file="price_data.txt", mode="a") as file:
+                        if items[i].text != "":
+                            file.write(f"{i} {items[i].text}")
+                            file.write("\n\n")
+
                 with open(file="price_data.txt", mode="a") as file:
-                    if items[i].text != "":
-                        file.write(f"{i} {items[i].text}")
-                        file.write("\n\n")
+                    file.write("END\n\n")
 
-            with open(file="price_data.txt", mode="a") as file:
-                file.write("END\n\n")
+                driver.close()
+                driver.switch_to.window(original_window)
 
-            driver.close()
-            driver.switch_to.window(original_window)
+            except:
+                with open(file="price_data.txt", mode="a") as file:
+                    file.write("NO DATA\n\n")
+                    file.write("END\n\n")
 
             WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "b_logoArea"))
