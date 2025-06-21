@@ -108,22 +108,26 @@ class PriceCheck:
                     pass
             sort_price.sort()
 
-            q1 = sort_price[int(len(sort_price) * 0.25)]
-            q3 = sort_price[int(len(sort_price) * 0.75)]
-            iqr = q3 - q1
-            lower_bound = q1 - (1.5*iqr)
-            upper_bound = q3 + (1.5*iqr)
+            if sort_price:
+                q1 = sort_price[int(len(sort_price) * 0.25)]
+                q3 = sort_price[int(len(sort_price) * 0.75)]
+                iqr = q3 - q1
+                lower_bound = q1 - (1.5*iqr)
+                upper_bound = q3 + (1.5*iqr)
 
-            valid_prices = []
-            for price in sort_price:
-                if lower_bound < price < upper_bound:
-                    valid_prices.append(price)
+                valid_prices = []
+                for price in sort_price:
+                    if lower_bound < price < upper_bound:
+                        valid_prices.append(price)
 
-            total = 0
-            for price in valid_prices:
-                total += price
+                total = 0
+                for price in valid_prices:
+                    total += price
 
-            mean_price = total / len(valid_prices)
-            mean_price = round(mean_price, 2)
+                mean_price = total / len(valid_prices)
+                mean_price = round(mean_price, 2)
 
-            self.prices.append(mean_price)
+                self.prices.append(mean_price)
+
+            else:
+                self.prices.append("NO DATA")
