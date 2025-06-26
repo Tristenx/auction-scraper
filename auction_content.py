@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 class AuctionContent:
@@ -52,7 +53,7 @@ class AuctionContent:
             file.write("")
 
         # ---------------------------- LOAD WEBSITE ------------------------------- #
-        service = Service(executable_path="chromedriver.exe")
+        service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service)
 
         self.driver.get("https://www.johnpyeauctions.co.uk/")

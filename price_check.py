@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 class PriceCheck:
@@ -19,7 +20,7 @@ class PriceCheck:
         with open(file="price_data.txt", mode="w") as file:
             file.write("")
 
-        service = Service(executable_path="chromedriver.exe")
+        service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service)
 
         driver.get("https://www.bing.com/")
