@@ -9,6 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class AuctionContent:
     def __init__(self):
+        self.url = "https://www.johnpyeauctions.co.uk/"
         self.text = []
         self.lot_numbers = []
         self.item_descriptions = []
@@ -38,12 +39,11 @@ class AuctionContent:
         with open(file="search_results.txt", mode="a") as file:
             file.write(item.text)
 
-    def multiple_pages(self):
-        try:
-            WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "pagination")))
+    def multiple_pages(self) -> bool:
+        """Checks if there are multiple pages."""
+        if EC.presence_of_element_located((By.CLASS_NAME, "pagination")):
             return True
-        except:
+        else:
             return False
 
     def scrape_data(self):
