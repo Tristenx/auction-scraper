@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
 
@@ -16,14 +17,16 @@ class AuctionContent:
         self.search_query = input("Search: ")
         self.service = ""
         self.driver = ""
-        self.lots = []
+        self.lots = self.parse_auction_lots(self.get_lot_text())
 
     def multiple_pages(self) -> bool:
         """Checks if there are multiple pages."""
-        if WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "pagination"))):
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "pagination")))
             return True
-        return False
+        except TimeoutException:
+            return False
 
     def load_website(self):
         """Loads the website and accepts cookies."""
@@ -68,7 +71,7 @@ class AuctionContent:
         number_of_pages = int(page_navigator.text[-3])
         return number_of_pages
 
-    def get_lots(self) -> str:
+    def get_lot_text(self) -> str:
         """Searches the website for the search query and returns all of the lots as a string."""
         self.service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
@@ -76,19 +79,23 @@ class AuctionContent:
         self.load_website()
         self.enter_search_query()
 
-        lots = ""
+        lot_text = ""
         if self.multiple_pages():
             number_of_pages = self.get_number_of_pages()
             for _ in range(number_of_pages):
-                lots += self.read_page()
-                lots += "\n"
+                lot_text += self.read_page()
+                lot_text += "\n"
                 self.click_next_page()
         else:
-            lots += self.read_page()
+            lot_text += self.read_page()
 
         self.driver.quit()
-        return lots
+        return lot_text
+
+    def parse_auction_lots(self, lot_text: str) -> list[dict]:
+        """Takes the lots text and returns it as a list of dictionaries."""
+        return [lot_text]
 
 
 auction_content = AuctionContent()
-print(auction_content.get_lots())
+print(auction_content.lots)
