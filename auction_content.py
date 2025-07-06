@@ -17,7 +17,7 @@ class AuctionContent:
         self.search_query = input("Search: ")
         self.service = ""
         self.driver = ""
-        self.lots = self.parse_auction_lots(self.get_lot_text())
+        self.auction_lots = self.parse_auction_lots(self.scrape_lot_text())
 
     def multiple_pages(self) -> bool:
         """Checks if there are multiple pages."""
@@ -71,7 +71,7 @@ class AuctionContent:
         number_of_pages = int(page_navigator.text[-3])
         return number_of_pages
 
-    def get_lot_text(self) -> str:
+    def scrape_lot_text(self) -> str:
         """Searches the website for the search query and returns all of the lots as a string."""
         self.service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
@@ -92,10 +92,33 @@ class AuctionContent:
         self.driver.quit()
         return lot_text
 
+    def get_lot_number(self, lot_line: str) -> str:
+        """Takes a line which contains a lot number and returns just the lot number."""
+        words = lot_line.split(" ")
+        lot_number = f"{words[0]} {words[1]}"
+        return lot_number
+
     def parse_auction_lots(self, lot_text: str) -> list[dict]:
         """Takes the lots text and returns it as a list of dictionaries."""
-        return [lot_text]
+        auction_lots = []
+        text_lines = lot_text.split("\n")
+        new_auction_lot = {
+            "lot": "",
+            "description": "",
+            "current_bid": "",
+            "time_remaining": ""
+        }
+
+        for index, line in enumerate(text_lines):
+            if "Lot" in line:
+                new_auction_lot["lot"] = self.get_lot_number(line)
+                new_auction_lot["description"] = text_lines[index+1]
+                new_auction_lot["current_bid"] = text_lines[index+4]
+                new_auction_lot["time_remaining"] = text_lines[index+5]
+                auction_lots.append(new_auction_lot)
+
+        return auction_lots
 
 
 auction_content = AuctionContent()
-print(auction_content.lots)
+print(auction_content.auction_lots)
