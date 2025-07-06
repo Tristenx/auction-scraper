@@ -49,6 +49,19 @@ class AuctionContent:
             By.XPATH, "/html/body/main/div/div[2]/div[2]/div[3]/div")
         return target_element.text
 
+    def click_next_page(self):
+        """Clicks the next page button."""
+        next_page = self.driver.find_element(
+            By.XPATH, '//ul[@class="pagination"]//a[text()="»"]')
+        next_page.click()
+
+    def get_number_of_pages(self) -> int:
+        """Returns the number of pages."""
+        page_navigator = self.driver.find_element(
+            By.CLASS_NAME, "pagination")
+        number_of_pages = int(page_navigator.text[-3])
+        return number_of_pages
+
     def get_lots(self) -> str:
         """Searches the website for the search query and returns all of the lots as a string."""
         self.service = Service(ChromeDriverManager().install())
@@ -57,7 +70,15 @@ class AuctionContent:
         self.load_website()
         self.enter_search_query()
 
-        lots = self.read_page()
+        lots = ""
+        if self.multiple_pages():
+            number_of_pages = self.get_number_of_pages()
+            for i in range(number_of_pages):
+                lots += self.read_page()
+                lots += "\n"
+                self.click_next_page()
+        else:
+            lots += self.read_page()
 
         self.driver.quit()
         return lots
