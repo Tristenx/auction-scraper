@@ -1,3 +1,4 @@
+"""Contains the auction content class which uses selenium to scrape data from the auction site."""
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -8,14 +9,19 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class AuctionContent:
+    """Stores lot data as a list of dictionaries and contains functions to scrape this data."""
+
     def __init__(self):
         self.url = "https://www.johnpyeauctions.co.uk/"
         self.search_query = input("Search: ")
+        self.service = ""
+        self.driver = ""
         self.lots = []
 
     def multiple_pages(self) -> bool:
         """Checks if there are multiple pages."""
-        if WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "pagination"))):
+        if WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "pagination"))):
             return True
         return False
 
@@ -73,7 +79,7 @@ class AuctionContent:
         lots = ""
         if self.multiple_pages():
             number_of_pages = self.get_number_of_pages()
-            for i in range(number_of_pages):
+            for _ in range(number_of_pages):
                 lots += self.read_page()
                 lots += "\n"
                 self.click_next_page()
