@@ -118,7 +118,3 @@ class AuctionContent:
                 auction_lots.append(new_auction_lot)
 
         return auction_lots
-
-
-auction_content = AuctionContent()
-print(auction_content.auction_lots)
