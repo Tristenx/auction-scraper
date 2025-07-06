@@ -102,15 +102,10 @@ class AuctionContent:
         """Takes the lots text and returns it as a list of dictionaries."""
         auction_lots = []
         text_lines = lot_text.split("\n")
-        new_auction_lot = {
-            "lot": "",
-            "description": "",
-            "current_bid": "",
-            "time_remaining": ""
-        }
 
         for index, line in enumerate(text_lines):
             if "Lot" in line:
+                new_auction_lot = {}
                 new_auction_lot["lot"] = self.get_lot_number(line)
                 new_auction_lot["description"] = text_lines[index+1]
                 new_auction_lot["current_bid"] = text_lines[index+4]
