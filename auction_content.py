@@ -20,8 +20,12 @@ class Lot:
         self.time_remaining = time_remaining
         self.retail_price = 0
 
-    def add_retail_price(self, retail_price: str) -> None:
-        self.retail_price = retail_price
+    def add_retail_price(self, retail_prices: list) -> None:
+        for item in retail_prices:
+            if item.text:
+                text = item.text
+                break
+        self.retail_price = text
 
 
 class AuctionContent:
@@ -95,7 +99,7 @@ class AuctionContent:
         self.enter_search_query()
 
         lot_text = ""
-        if self.multiple_pages():
+        if False:
             number_of_pages = self.get_number_of_pages()
             for _ in range(number_of_pages):
                 lot_text += self.read_page()
@@ -136,6 +140,15 @@ class PriceCheck:
         self.service = ""
         self.driver = ""
 
+    def is_shopping_tab(self) -> bool:
+        """Checks if there is a shopping tab."""
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "b-scopeListItem-shop")))
+            return True
+        except TimeoutException:
+            return False
+
     def get_retail_prices(self):
         self.service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
@@ -157,7 +170,7 @@ class PriceCheck:
                 EC.element_to_be_clickable((By.ID, "search_icon"))
             ).click()
 
-            try:
+            if self.is_shopping_tab():
                 original_window = self.driver.current_window_handle
 
                 WebDriverWait(self.driver, 5).until(
@@ -176,13 +189,13 @@ class PriceCheck:
                     EC.presence_of_element_located((By.CLASS_NAME, "slide")))
 
                 items = self.driver.find_elements(By.CLASS_NAME, "slide")
-                self.auction_lots[i].add_retail_price(items.text)
+                self.auction_lots[i].add_retail_price(items)
 
                 self.driver.close()
                 self.driver.switch_to.window(original_window)
 
-            except:
-                self.auction_lots[i].add_retail_price("NO_DATA")
+            else:
+                self.auction_lots[i].retail_price = "NO_DATA"
 
             WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "b_logoArea"))
@@ -196,5 +209,6 @@ class PriceCheck:
 auction = AuctionContent()
 check = PriceCheck(auction.auction_lots)
 check.get_retail_prices()
+print(len(check.auction_lots))
 for lot in check.auction_lots:
     print(lot.retail_price)
