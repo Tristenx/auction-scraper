@@ -9,6 +9,16 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+class Lot:
+    """Helper class to store individual lot data."""
+
+    def __init__(self, lot_number: str, description: str, current_bid: str, time_remaining: str):
+        self.lot_number = lot_number
+        self.description = description
+        self.current_bid = current_bid
+        self.time_remaining = time_remaining
+
+
 class AuctionContent:
     """Stores lot data as a list of dictionaries and contains functions to scrape this data."""
 
@@ -98,18 +108,15 @@ class AuctionContent:
         lot_number = f"{words[0]} {words[1]}"
         return lot_number
 
-    def parse_auction_lots(self, lot_text: str) -> list[dict]:
+    def parse_auction_lots(self, lot_text: str) -> list[Lot]:
         """Takes the lots text and returns it as a list of dictionaries."""
         auction_lots = []
         text_lines = lot_text.split("\n")
 
         for index, line in enumerate(text_lines):
             if "Lot" in line:
-                new_auction_lot = {}
-                new_auction_lot["lot"] = self.get_lot_number(line)
-                new_auction_lot["description"] = text_lines[index+1]
-                new_auction_lot["current_bid"] = text_lines[index+4]
-                new_auction_lot["time_remaining"] = text_lines[index+5]
-                auction_lots.append(new_auction_lot)
+                new_lot = Lot(self.get_lot_number(line),
+                              text_lines[index+1], text_lines[index+4], text_lines[index+5])
+                auction_lots.append(new_lot)
 
         return auction_lots
