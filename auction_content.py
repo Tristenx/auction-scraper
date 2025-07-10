@@ -18,6 +18,10 @@ class Lot:
         self.description = description
         self.current_bid = current_bid
         self.time_remaining = time_remaining
+        self.retail_price = 0
+
+    def add_retail_price(self, retail_price: str) -> None:
+        self.retail_price = retail_price
 
 
 class AuctionContent:
@@ -124,15 +128,13 @@ class AuctionContent:
 
 
 class PriceCheck:
-    def __init__(self, auction_lots: list[dict]):
-        self.item_descriptions = [lot["description"]
+    def __init__(self, auction_lots: list[Lot]):
+        self.auction_lots = auction_lots
+        self.item_descriptions = [lot.description
                                   for lot in auction_lots]
-        self.current_bids = [lot["current_bid"]
-                             for lot in auction_lots]
         self.url = "https://www.bing.com/"
         self.service = ""
         self.driver = ""
-        self.prices = []
 
     def get_retail_prices(self):
         self.service = Service(ChromeDriverManager().install())
@@ -174,13 +176,13 @@ class PriceCheck:
                     EC.presence_of_element_located((By.CLASS_NAME, "slide")))
 
                 items = self.driver.find_elements(By.CLASS_NAME, "slide")
-                print(items[7].text)
+                self.auction_lots[i].add_retail_price(items.text)
 
                 self.driver.close()
                 self.driver.switch_to.window(original_window)
 
             except:
-                print("NO_DATA")
+                self.auction_lots[i].add_retail_price("NO_DATA")
 
             WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "b_logoArea"))
@@ -189,3 +191,10 @@ class PriceCheck:
             time.sleep(2)
 
         self.driver.quit()
+
+
+auction = AuctionContent()
+check = PriceCheck(auction.auction_lots)
+check.get_retail_prices()
+for lot in check.auction_lots:
+    print(lot.retail_price)
