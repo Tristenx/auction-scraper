@@ -25,6 +25,7 @@ class Lot:
             if item.text:
                 text = item.text
                 break
+        text = text.split("\n")
         self.retail_price = text
 
 
@@ -206,9 +207,10 @@ class PriceCheck:
         self.driver.quit()
 
 
-auction = AuctionContent()
-check = PriceCheck(auction.auction_lots)
-check.get_retail_prices()
-print(len(check.auction_lots))
-for lot in check.auction_lots:
-    print(lot.retail_price)
+if __name__ == "__main__":
+    auction = AuctionContent()
+    check = PriceCheck(auction.auction_lots)
+    check.get_retail_prices()
+    print(len(check.auction_lots))
+    for lot in check.auction_lots:
+        print(lot.retail_price)
