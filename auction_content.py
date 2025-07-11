@@ -1,4 +1,4 @@
-"""Contains the auction content class which uses selenium to scrape data from the auction site."""
+"""Web scraper that uses selenium to get data from John Pye Auctions."""
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -14,7 +14,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 class Lot:
     """Helper class to store individual lot data."""
 
-    def __init__(self, lot_number: str, description: str, current_bid: str, time_remaining: str) -> None:
+    def __init__(self, lot_number: str, description: str,
+                 current_bid: str, time_remaining: str) -> None:
         self.lot_number = lot_number
         self.description = description
         self.current_bid = current_bid
@@ -22,23 +23,39 @@ class Lot:
         self.retail_price = 0
 
     def add_retail_price(self, retail_prices: list[WebElement]) -> None:
+        """Takes a list of WebElements and extracts the retail price."""
         all_retail_text = [item.text for item in retail_prices]
+
+        retail_text_first_entry = "NO_DATA"
         found = False
         for entry in all_retail_text:
             if entry != "" and not found:
                 found = True
                 retail_text_first_entry = entry
+
+        if retail_text_first_entry == "NO_DATA":
+            self.retail_price = retail_text_first_entry
+
         retail_text_first_entry_lines = retail_text_first_entry.split("\n")
+        price = "NO_DATA"
         found = False
         for line in retail_text_first_entry_lines:
             if line[0] == "£" and not found:
                 found = True
                 price = line
+
         self.retail_price = price
+
+    def display_all_lot_info(self) -> None:
+        """Prints all lot data in a readable format."""
+        print(f"Lot Number: {self.lot_number}")
+        print(f"Item Description: {self.description}")
+        print(f"Current Bid: {self.current_bid}")
+        print(f"Retail Price: {self.retail_price}")
 
 
 class AuctionContent:
-    """Stores lot data as a list of dictionaries and contains functions to scrape this data."""
+    """Creates a list of Lot objects using data from John Pye Auctions."""
 
     def __init__(self):
         self.url = "https://www.johnpyeauctions.co.uk/"
@@ -56,7 +73,7 @@ class AuctionContent:
         except TimeoutException:
             return False
 
-    def load_website(self):
+    def load_website(self) -> None:
         """Loads the website and accepts cookies."""
         self.driver.get(self.url)
 
@@ -127,7 +144,7 @@ class AuctionContent:
         return lot_number
 
     def parse_auction_lots(self, lot_text: str) -> list[Lot]:
-        """Takes the lots text and returns it as a list of dictionaries."""
+        """Takes the lot text and returns it as a list of Lot objects."""
         auction_lots = []
         text_lines = lot_text.split("\n")
 
@@ -141,10 +158,11 @@ class AuctionContent:
 
 
 class PriceCheck:
-    def __init__(self, auction_lots: list[Lot]):
+    """Searches for retail prices of Lot objects using bing."""
+
+    def __init__(self, auction_lots: list[Lot]) -> None:
         self.auction_lots = auction_lots
-        self.item_descriptions = [lot.description
-                                  for lot in auction_lots]
+        self.item_descriptions = [lot.description for lot in auction_lots]
         self.url = "https://www.bing.com/"
         self.service = ""
         self.driver = ""
@@ -158,7 +176,8 @@ class PriceCheck:
         except TimeoutException:
             return False
 
-    def get_retail_prices(self):
+    def get_retail_prices(self) -> None:
+        """Searches lot descriptions on bing and updates lot retail prices."""
         self.service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
         self.driver.get(self.url)
@@ -220,8 +239,5 @@ if __name__ == "__main__":
     price_check = PriceCheck(auction.auction_lots)
     price_check.get_retail_prices()
     for lot in price_check.auction_lots:
-        print(lot.description)
-        print(lot.current_bid)
-        print(lot.retail_price)
-        print(lot.time_remaining)
+        lot.display_all_lot_info()
         print("\n")
