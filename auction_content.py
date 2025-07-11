@@ -7,24 +7,34 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Lot:
     """Helper class to store individual lot data."""
 
-    def __init__(self, lot_number: str, description: str, current_bid: str, time_remaining: str):
+    def __init__(self, lot_number: str, description: str, current_bid: str, time_remaining: str) -> None:
         self.lot_number = lot_number
         self.description = description
         self.current_bid = current_bid
         self.time_remaining = time_remaining
         self.retail_price = 0
 
-    def add_retail_price(self, retail_prices: list) -> None:
-        text = []
-        for item in retail_prices:
-            text.append(item.text)
-        self.retail_price = text
+    def add_retail_price(self, retail_prices: list[WebElement]) -> None:
+        all_retail_text = [item.text for item in retail_prices]
+        found = False
+        for entry in all_retail_text:
+            if entry != "" and not found:
+                found = True
+                retail_text_first_entry = entry
+        retail_text_first_entry_lines = retail_text_first_entry.split("\n")
+        found = False
+        for line in retail_text_first_entry_lines:
+            if line[0] == "£" and not found:
+                found = True
+                price = line
+        self.retail_price = price
 
 
 class AuctionContent:
@@ -207,8 +217,11 @@ class PriceCheck:
 
 if __name__ == "__main__":
     auction = AuctionContent()
-    check = PriceCheck(auction.auction_lots)
-    check.get_retail_prices()
-    print(len(check.auction_lots))
-    for lot in check.auction_lots:
+    price_check = PriceCheck(auction.auction_lots)
+    price_check.get_retail_prices()
+    for lot in price_check.auction_lots:
+        print(lot.description)
+        print(lot.current_bid)
         print(lot.retail_price)
+        print(lot.time_remaining)
+        print("\n")
