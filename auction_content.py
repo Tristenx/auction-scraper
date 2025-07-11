@@ -21,11 +21,9 @@ class Lot:
         self.retail_price = 0
 
     def add_retail_price(self, retail_prices: list) -> None:
+        text = []
         for item in retail_prices:
-            if item.text:
-                text = item.text
-                break
-        text = text.split("\n")
+            text.append(item.text)
         self.retail_price = text
 
 
