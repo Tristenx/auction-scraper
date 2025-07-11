@@ -52,6 +52,7 @@ class Lot:
         print(f"Item Description: {self.description}")
         print(f"Current Bid: {self.current_bid}")
         print(f"Retail Price: {self.retail_price}")
+        print(f"Time Remaining: {self.time_remaining}")
 
 
 class AuctionContent:
