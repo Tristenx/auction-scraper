@@ -94,6 +94,7 @@ class AuctionContent:
         search_bar = self.driver.find_element(By.ID, "FullTextQuery1")
         search_bar.clear()
         search_bar.send_keys(self.search_query + Keys.ENTER)
+        time.sleep(5)
 
     def read_page(self) -> str:
         """Searches for the element which contains the lots then returns its text as a string."""
@@ -109,6 +110,7 @@ class AuctionContent:
         next_page = self.driver.find_element(
             By.XPATH, '//ul[@class="pagination"]//a[text()="»"]')
         next_page.click()
+        time.sleep(5)
 
     def get_number_of_pages(self) -> int:
         """Returns the number of pages."""
@@ -126,7 +128,7 @@ class AuctionContent:
         self.enter_search_query()
 
         lot_text = ""
-        if False:
+        if self.multiple_pages():
             number_of_pages = self.get_number_of_pages()
             for _ in range(number_of_pages):
                 lot_text += self.read_page()
@@ -241,4 +243,3 @@ if __name__ == "__main__":
     price_check.get_retail_prices()
     for lot in price_check.auction_lots:
         lot.display_all_lot_info()
-        print("\n")
