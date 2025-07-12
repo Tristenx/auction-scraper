@@ -21,7 +21,7 @@ class Lot:
         self.description = description
         self.current_bid = current_bid
         self.time_remaining = time_remaining
-        self.retail_price = 0
+        self.retail_price = self.check_db_for_retail_price()
 
     def check_db_for_retail_price(self) -> str:
         """Checks if the database already contains the retail price."""
@@ -32,7 +32,7 @@ class Lot:
             """CREATE TABLE IF NOT EXISTS PRICES(DESCRIPTION VARCHAR(255), PRICE VARCHAR(255))""")
 
         cursor.execute(
-            f"SELECT * FROM PRICES WHERE DESCRIPTION = ?", (self.description,))
+            "SELECT * FROM PRICES WHERE DESCRIPTION = ?", (self.description,))
 
         rows = cursor.fetchall()
 
@@ -40,9 +40,20 @@ class Lot:
         conn.close()
 
         if not rows:
-            return "NO_DATA"
+            return "NOT_IN_DB"
         for row in rows:
             return row[1]
+
+    def add_retail_price_to_db(self, retail_price: str) -> None:
+        """Adds the scraped retail price to the database."""
+        conn = sqlite3.connect('retail_price.db')
+        cursor = conn.cursor()
+
+        cursor.execute("INSERT INTO PRICES VALUES (?, ?)",
+                       (self.description, retail_price))
+
+        conn.commit()
+        conn.close()
 
     def add_retail_price(self, retail_prices: list[WebElement]) -> None:
         """Takes a list of WebElements and extracts the retail price."""
@@ -65,7 +76,8 @@ class Lot:
             if line[0] == "£" and not found:
                 found = True
                 price = line
-
+        if price != "NO_DATA":
+            self.add_retail_price_to_db(price)
         self.retail_price = price
 
     def display_all_lot_info(self) -> None:
@@ -233,40 +245,42 @@ class PriceCheck:
         self.load_website()
 
         for i in range(len(self.item_descriptions)):
-            self.enter_search_query(i)
+            if self.auction_lots[i].retail_price == "NOT_IN_DB":
+                self.enter_search_query(i)
 
-            if self.is_shopping_tab():
-                original_window = self.driver.current_window_handle
+                if self.is_shopping_tab():
+                    original_window = self.driver.current_window_handle
+
+                    WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable(
+                            (By.ID, "b-scopeListItem-shop"))
+                    ).click()
+
+                    WebDriverWait(self.driver, 5).until(
+                        EC.number_of_windows_to_be(2))
+
+                    for window_handle in self.driver.window_handles:
+                        if window_handle != original_window:
+                            self.driver.switch_to.window(window_handle)
+                            break
+
+                    WebDriverWait(self.driver, 5).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, "slide")))
+
+                    items = self.driver.find_elements(By.CLASS_NAME, "slide")
+                    self.auction_lots[i].add_retail_price(items)
+
+                    self.driver.close()
+                    self.driver.switch_to.window(original_window)
+
+                else:
+                    self.auction_lots[i].retail_price = "NO_DATA"
 
                 WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable((By.ID, "b-scopeListItem-shop"))
+                    EC.element_to_be_clickable((By.CLASS_NAME, "b_logoArea"))
                 ).click()
 
-                WebDriverWait(self.driver, 5).until(
-                    EC.number_of_windows_to_be(2))
-
-                for window_handle in self.driver.window_handles:
-                    if window_handle != original_window:
-                        self.driver.switch_to.window(window_handle)
-                        break
-
-                WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "slide")))
-
-                items = self.driver.find_elements(By.CLASS_NAME, "slide")
-                self.auction_lots[i].add_retail_price(items)
-
-                self.driver.close()
-                self.driver.switch_to.window(original_window)
-
-            else:
-                self.auction_lots[i].retail_price = "NO_DATA"
-
-            WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "b_logoArea"))
-            ).click()
-
-            time.sleep(2)
+                time.sleep(2)
 
         self.driver.quit()
 
@@ -277,3 +291,18 @@ if __name__ == "__main__":
     price_check.get_retail_prices()
     for lot in price_check.auction_lots:
         lot.display_all_lot_info()
+    # conn = sqlite3.connect('retail_price.db')
+    # cursor = conn.cursor()
+
+    # cursor.execute(
+    #     """CREATE TABLE IF NOT EXISTS PRICES(DESCRIPTION VARCHAR(255), PRICE VARCHAR(255))""")
+
+    # cursor.execute(
+    #     "SELECT * FROM PRICES")
+
+    # rows = cursor.fetchall()
+    # for row in rows:
+    #     print(row)
+
+    # conn.commit()
+    # conn.close()
