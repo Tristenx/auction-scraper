@@ -86,7 +86,7 @@ class AuctionContent:
             By.CLASS_NAME, "cc-nb-okagree")
         accept_button.click()
 
-    def enter_search_query(self):
+    def enter_search_query(self) -> None:
         """Types search query in the search bar and hits enter."""
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.ID, "FullTextQuery1")))
@@ -179,10 +179,8 @@ class PriceCheck:
         except TimeoutException:
             return False
 
-    def get_retail_prices(self) -> None:
-        """Searches lot descriptions on bing and updates lot retail prices."""
-        self.service = Service(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=self.service)
+    def load_website(self) -> None:
+        """Loads the website and accepts cookies."""
         self.driver.get(self.url)
 
         time.sleep(5)
@@ -190,16 +188,27 @@ class PriceCheck:
             EC.element_to_be_clickable((By.ID, "bnp_btn_accept"))
         ).click()
 
-        for i in range(len(self.item_descriptions)):
-            WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located((By.NAME, "q"))
-            )
-            search_bar = self.driver.find_element(By.NAME, "q")
-            search_bar.send_keys(self.item_descriptions[i])
+    def enter_search_query(self, description_index: int) -> None:
+        """Types search query in the search bar and hits search button."""
+        WebDriverWait(self.driver, 5).until(
+            EC.presence_of_element_located((By.NAME, "q"))
+        )
+        search_bar = self.driver.find_element(By.NAME, "q")
+        search_bar.send_keys(self.item_descriptions[description_index])
 
-            WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable((By.ID, "search_icon"))
-            ).click()
+        WebDriverWait(self.driver, 5).until(
+            EC.element_to_be_clickable((By.ID, "search_icon"))
+        ).click()
+
+    def get_retail_prices(self) -> None:
+        """Searches lot descriptions on bing and updates lot retail prices."""
+        self.service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=self.service)
+
+        self.load_website()
+
+        for i in range(len(self.item_descriptions)):
+            self.enter_search_query(i)
 
             if self.is_shopping_tab():
                 original_window = self.driver.current_window_handle
