@@ -1,5 +1,6 @@
 """Web scraper that uses selenium to get data from John Pye Auctions."""
 import time
+import sqlite3
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -21,6 +22,27 @@ class Lot:
         self.current_bid = current_bid
         self.time_remaining = time_remaining
         self.retail_price = 0
+
+    def check_db_for_retail_price(self) -> str:
+        """Checks if the database already contains the retail price."""
+        conn = sqlite3.connect('retail_price.db')
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS PRICES(DESCRIPTION VARCHAR(255), PRICE VARCHAR(255))""")
+
+        cursor.execute(
+            f"SELECT * FROM PRICES WHERE DESCRIPTION = ?", (self.description,))
+
+        rows = cursor.fetchall()
+
+        conn.commit()
+        conn.close()
+
+        if not rows:
+            return "NO_DATA"
+        for row in rows:
+            return row[1]
 
     def add_retail_price(self, retail_prices: list[WebElement]) -> None:
         """Takes a list of WebElements and extracts the retail price."""
@@ -184,9 +206,12 @@ class PriceCheck:
         self.driver.get(self.url)
 
         time.sleep(5)
-        WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.ID, "bnp_btn_accept"))
-        ).click()
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "bnp_btn_accept"))
+            ).click()
+        except TimeoutException:
+            pass
 
     def enter_search_query(self, description_index: int) -> None:
         """Types search query in the search bar and hits search button."""
