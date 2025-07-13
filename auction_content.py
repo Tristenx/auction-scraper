@@ -291,6 +291,7 @@ if __name__ == "__main__":
     price_check.get_retail_prices()
     for lot in price_check.auction_lots:
         lot.display_all_lot_info()
+        print("\n")
     # conn = sqlite3.connect('retail_price.db')
     # cursor = conn.cursor()
 
