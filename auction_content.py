@@ -33,13 +33,11 @@ class Lot:
                         rrp = ""
                         found_price = False
                         for n in range(i+3, len(self.description)):
-                            if self.description == ")":
-                                found_price = False
                             if self.description[n] == "£":
                                 found_price = True
                             if found_price:
                                 rrp += self.description[n]
-                        self.retail_price = f"{rrp} from description"
+                        self.retail_price = f"{rrp} --- FROM DESCRIPTION"
 
     def check_db_for_retail_price(self) -> str:
         """Checks if the database already contains the retail price."""
