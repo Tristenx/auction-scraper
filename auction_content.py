@@ -26,19 +26,20 @@ class Lot:
 
     def check_description_for_rrp(self) -> None:
         """Checks the lot description for rrp."""
-        if "RRP" in self.description:
-            for i in range(len(self.description)):
-                if self.description[i:i+3] == "RRP":
-                    rrp = ""
-                    found_price = False
-                    for n in range(i+3, len(self.description)):
-                        if self.description == ")":
-                            found_price = False
-                        if self.description[n] == "£" or self.description[i] == "€":
-                            found_price = True
-                        if found_price:
-                            rrp += self.description[n]
-                    self.retail_price = f"{rrp} from description"
+        if self.retail_price == "NOT_IN_DB":
+            if "RRP" in self.description:
+                for i in range(len(self.description)):
+                    if self.description[i:i+3] == "RRP":
+                        rrp = ""
+                        found_price = False
+                        for n in range(i+3, len(self.description)):
+                            if self.description == ")":
+                                found_price = False
+                            if self.description[n] == "£":
+                                found_price = True
+                            if found_price:
+                                rrp += self.description[n]
+                        self.retail_price = f"{rrp} from description"
 
     def check_db_for_retail_price(self) -> str:
         """Checks if the database already contains the retail price."""
