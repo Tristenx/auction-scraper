@@ -22,6 +22,23 @@ class Lot:
         self.current_bid = current_bid
         self.time_remaining = time_remaining
         self.retail_price = self.check_db_for_retail_price()
+        self.check_description_for_rrp()
+
+    def check_description_for_rrp(self) -> None:
+        """Checks the lot description for rrp."""
+        if "RRP" in self.description:
+            for i in range(len(self.description)):
+                if self.description[i:i+3] == "RRP":
+                    rrp = ""
+                    found_price = False
+                    for n in range(i+3, len(self.description)):
+                        if self.description == ")":
+                            found_price = False
+                        if self.description[n] == "£" or self.description[i] == "€":
+                            found_price = True
+                        if found_price:
+                            rrp += self.description[n]
+                    self.retail_price = f"{rrp} from description"
 
     def check_db_for_retail_price(self) -> str:
         """Checks if the database already contains the retail price."""
@@ -73,7 +90,7 @@ class Lot:
         price = "NO_DATA"
         found = False
         for line in retail_text_first_entry_lines:
-            if line[0] == "£" and not found:
+            if (line[0] == "£" or line[0] == "€") and not found:
                 found = True
                 price = line
         if price != "NO_DATA":
@@ -292,18 +309,19 @@ if __name__ == "__main__":
     for lot in price_check.auction_lots:
         lot.display_all_lot_info()
         print("\n")
-    # conn = sqlite3.connect('retail_price.db')
-    # cursor = conn.cursor()
 
-    # cursor.execute(
-    #     """CREATE TABLE IF NOT EXISTS PRICES(DESCRIPTION VARCHAR(255), PRICE VARCHAR(255))""")
+    conn = sqlite3.connect('retail_price.db')
+    cursor = conn.cursor()
 
-    # cursor.execute(
-    #     "SELECT * FROM PRICES")
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS PRICES(DESCRIPTION VARCHAR(255), PRICE VARCHAR(255))""")
 
-    # rows = cursor.fetchall()
-    # for row in rows:
-    #     print(row)
+    cursor.execute(
+        "SELECT * FROM PRICES")
 
-    # conn.commit()
-    # conn.close()
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
+
+    conn.commit()
+    conn.close()
